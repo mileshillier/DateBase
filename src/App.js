@@ -56,7 +56,7 @@ export default function App() {
   const [logModalProfileId, setLogModalProfileId] = useState(null);
   const [importModalProfileId, setImportModalProfileId] = useState(null);
 
-  const { isMobile, isTablet, isDesktop } = useBreakpoint();
+  const { isMobile, isTablet } = useBreakpoint();
 
 
   useEffect(() => { saveProfiles(profiles); }, [profiles]);
