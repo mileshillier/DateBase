@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#F9F7F5" />
+    <meta name="description" content="DateBase — your private little black book" />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <title>DateBase</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              rose: {
+                50:  '#FEF2F4',
+                100: '#FDE0E5',
+                200: '#FBB8C5',
+                300: '#F48DA0',
+                400: '#E8637A',
+                500: '#C8415A',
+                600: '#A8314A',
+                700: '#88223A',
+                800: '#681828',
+                900: '#500F1E',
+              },
+              silver: {
+                50:  '#FAFAFA',
+                100: '#F5F5F5',
+                200: '#E8E8E8',
+                300: '#D4D4D4',
+                400: '#AAAAAA',
+                500: '#888888',
+                600: '#666666',
+                700: '#444444',
+                800: '#222222',
+                900: '#111111',
+              },
+            },
+            fontFamily: {
+              sans: ['DM Sans', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            },
+          },
+        },
+      }
+    </script>
+    <style>
+      * { -webkit-tap-highlight-color: transparent; }
+      body { background: #EEECEA; font-family: 'DM Sans', sans-serif; }
+      #root { background: #F9F7F5; }
+      ::-webkit-scrollbar { display: none; }
+      * { scrollbar-width: none; }
+
+      @keyframes slideUp {
+        from { transform: translateY(100%); opacity: 0; }
+        to   { transform: translateY(0);   opacity: 1; }
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+      }
+      .sheet-panel  { animation: slideUp 0.28s cubic-bezier(0.32, 0.72, 0, 1); }
+      .sheet-backdrop { animation: fadeIn 0.2s ease; }
+    </style>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+  </body>
+</html>
