@@ -57,7 +57,7 @@ export default function App() {
   const [importModalProfileId, setImportModalProfileId] = useState(null);
 
   const { isMobile, isTablet, isDesktop } = useBreakpoint();
-  const isWide = isTablet || isDesktop; // sidebar is visible
+
 
   useEffect(() => { saveProfiles(profiles); }, [profiles]);
 

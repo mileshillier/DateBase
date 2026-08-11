@@ -146,7 +146,7 @@ export function InsightsScreen({ profiles, isDesktop }) {
     ? (activePeople.reduce((s, p) => s + p.interactions.length, 0) / activePeople.length).toFixed(1)
     : '—';
 
-  const pad = isDesktop ? '0 24px' : '0 16px';
+
   const gap = isDesktop ? 12 : 10;
 
   // Grid cols for the 2-col card sections
