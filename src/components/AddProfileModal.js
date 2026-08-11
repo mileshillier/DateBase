@@ -12,6 +12,16 @@ const LABEL_STYLE = {
   textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 6, display: 'block',
 };
 
+const PRIMARY_BTN_STYLE = (enabled) => ({
+  width: '100%', padding: '14px', borderRadius: 14, border: 'none',
+  background: enabled ? 'linear-gradient(135deg, #7A2848 0%, #5C1D37 100%)' : '#F5F5F5',
+  color: enabled ? '#FFFFFF' : '#AAAAAA',
+  cursor: enabled ? 'pointer' : 'not-allowed',
+  fontSize: 14, fontWeight: 700, letterSpacing: '0.02em',
+  boxShadow: enabled ? '0 4px 16px rgba(122,40,72,0.3)' : 'none',
+  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+});
+
 const ACCEPT = [
   'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/heic', 'image/heif',
   'application/pdf',
@@ -21,13 +31,13 @@ const ACCEPT = [
   'application/rtf', 'text/rtf',
 ].join(',');
 
-async function analyzeFile(dataUrl, file) {
+async function callApi(path, payload) {
   let res;
   try {
-    res = await fetch('/api/analyze-file', {
+    res = await fetch(path, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ dataUrl, mimeType: file.type, fileName: file.name }),
+      body: JSON.stringify(payload),
     });
   } catch (_) {
     throw new Error('Cannot reach API server. Run: npm run server');
@@ -40,6 +50,10 @@ async function analyzeFile(dataUrl, file) {
   if (!res.ok) throw new Error(body.error || `Server error ${res.status}`);
   return body.findings ?? [];
 }
+
+const analyzeFile = (dataUrl, file) => callApi('/api/analyze-file', { dataUrl, mimeType: file.type, fileName: file.name });
+const analyzeText = (text) => callApi('/api/analyze-text', { text });
+const analyzeUrl  = (url)  => callApi('/api/analyze-url', { url });
 
 // Map extracted findings onto form fields
 function applyFindings(findings, setForm) {
@@ -118,9 +132,9 @@ function PillSelect({ options, value, onChange, multi = false }) {
             }}
             style={{
               padding: '6px 12px', borderRadius: 20, fontSize: 12, fontWeight: 500,
-              border: selected ? '1.5px solid #C8415A' : '1.5px solid #E8E8E8',
-              background: selected ? 'rgba(200,65,90,0.08)' : 'transparent',
-              color: selected ? '#C8415A' : '#666666',
+              border: selected ? '1.5px solid #7A2848' : '1.5px solid #E8E8E8',
+              background: selected ? 'rgba(122,40,72,0.08)' : 'transparent',
+              color: selected ? '#7A2848' : '#666666',
               cursor: 'pointer',
             }}>
             {opt}
@@ -131,22 +145,109 @@ function PillSelect({ options, value, onChange, multi = false }) {
   );
 }
 
+function ModeCard({ icon, title, desc, onClick }) {
+  return (
+    <button type="button" onClick={onClick} style={{
+      width: '100%', display: 'flex', alignItems: 'center', gap: 14,
+      padding: '16px 18px', borderRadius: 16,
+      background: '#F9F7F5', border: '1px solid #E8E8E8',
+      cursor: 'pointer', textAlign: 'left',
+    }}>
+      <div style={{
+        width: 42, height: 42, borderRadius: 12, flexShrink: 0,
+        background: 'rgba(122,40,72,0.08)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 19,
+      }}>{icon}</div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: '#111111' }}>{title}</div>
+        <div style={{ fontSize: 12, color: '#888888', marginTop: 2 }}>{desc}</div>
+      </div>
+      <span style={{ color: '#CCCCCC', fontSize: 18, flexShrink: 0 }}>›</span>
+    </button>
+  );
+}
+
+function ErrorBanner({ children }) {
+  return (
+    <div style={{
+      background: '#FEF5F5', border: '1px solid #F0CCCC',
+      borderRadius: 12, padding: '12px 14px',
+    }}>
+      <p style={{ margin: 0, fontSize: 12, color: '#C04040', lineHeight: 1.5 }}>{children}</p>
+    </div>
+  );
+}
+
+function DoneBanner({ label, onRetry, onContinue }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{
+        padding: '10px 14px', borderRadius: 12,
+        background: '#F0FAF4', border: '1px solid #B8E0C8',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+      }}>
+        <span style={{ fontSize: 13, color: '#2A8A5A', fontWeight: 500 }}>✓ Pre-filled from {label}</span>
+        <button type="button" onClick={onRetry} style={{
+          background: 'none', border: 'none', cursor: 'pointer',
+          color: '#888888', fontSize: 11, padding: 0, flexShrink: 0,
+        }}>Try another</button>
+      </div>
+      <button type="button" onClick={onContinue} style={PRIMARY_BTN_STYLE(true)}>
+        Continue to details →
+      </button>
+    </div>
+  );
+}
+
+function SkipManualLink({ onClick }) {
+  return (
+    <button type="button" onClick={onClick} style={{
+      background: 'none', border: 'none', cursor: 'pointer',
+      color: '#999999', fontSize: 12, fontWeight: 500, padding: '2px 0',
+      textAlign: 'center', textDecoration: 'underline', textUnderlineOffset: 2,
+    }}>
+      or enter details manually
+    </button>
+  );
+}
+
+const MODE_META = {
+  choose: { title: 'New Profile', subtitle: 'How would you like to add them?' },
+  url:    { title: 'From a URL', subtitle: "We'll pull what we can from the page" },
+  import: { title: 'Import', subtitle: "Upload a file or paste text — we'll extract the details" },
+  manual: { title: 'New Profile', subtitle: null },
+};
+
 export function AddProfileModal({ onAdd, onClose }) {
-  const [step, setStep] = useState(1);
+  const [mode, setMode] = useState('choose'); // 'choose' | 'url' | 'import' | 'manual'
+  const [step, setStep] = useState(1); // manual sub-step: 1 | 2
   const [form, setForm] = useState({
     name: '', age: '', photo: '', location: '', occupation: '',
     height: '', lookingFor: '', metOn: '',
     interests: [], greenFlags: '', redFlags: '', firstImpression: '', notes: '',
   });
 
-  // File import state
+  // Import state (file upload or pasted text)
+  const [importTab, setImportTab] = useState('file'); // 'file' | 'paste'
   const [importStatus, setImportStatus] = useState(null); // null | 'analyzing' | 'done' | 'error'
   const [importName, setImportName] = useState('');
   const [importError, setImportError] = useState('');
+  const [pasteText, setPasteText] = useState('');
   const importFileRef = useRef(null);
+
+  // URL state
+  const [urlValue, setUrlValue] = useState('');
+  const [urlStatus, setUrlStatus] = useState(null); // null | 'analyzing' | 'done' | 'error'
+  const [urlError, setUrlError] = useState('');
 
   function set(field, value) {
     setForm(f => ({ ...f, [field]: value }));
+  }
+
+  function resetImport() {
+    setImportStatus(null);
+    setImportName('');
+    setImportError('');
   }
 
   function handleImportFile(e) {
@@ -180,6 +281,54 @@ export function AddProfileModal({ onAdd, onClose }) {
       setImportError('Could not read file.');
     };
     reader.readAsDataURL(file);
+  }
+
+  async function handlePasteExtract() {
+    if (!pasteText.trim()) return;
+
+    setImportStatus('analyzing');
+    setImportName('pasted text');
+    setImportError('');
+
+    try {
+      const findings = await analyzeText(pasteText);
+      if (!findings.length) {
+        setImportStatus('error');
+        setImportError('Nothing extracted — try more detail or fill in manually.');
+        return;
+      }
+      applyFindings(findings, setForm);
+      setImportStatus('done');
+    } catch (err) {
+      setImportStatus('error');
+      setImportError(err.message);
+    }
+  }
+
+  async function handleUrlExtract() {
+    if (!urlValue.trim()) return;
+
+    setUrlStatus('analyzing');
+    setUrlError('');
+
+    try {
+      const findings = await analyzeUrl(urlValue.trim());
+      if (!findings.length) {
+        setUrlStatus('error');
+        setUrlError('Nothing extracted — the page may require login. Try pasting the text instead.');
+        return;
+      }
+      applyFindings(findings, setForm);
+      setUrlStatus('done');
+    } catch (err) {
+      setUrlStatus('error');
+      setUrlError(err.message);
+    }
+  }
+
+  function handleHeaderBack() {
+    if (mode === 'manual' && step === 2) { setStep(1); return; }
+    setMode('choose');
   }
 
   function handleSubmit(e) {
@@ -221,6 +370,8 @@ export function AddProfileModal({ onAdd, onClose }) {
     onClose();
   }
 
+  const meta = MODE_META[mode];
+
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 150,
@@ -238,16 +389,26 @@ export function AddProfileModal({ onAdd, onClose }) {
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px 0' }}>
-          <div>
-            <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: '#111111', fontFamily: "'DM Sans', sans-serif" }}>
-              New Profile
-            </h2>
-            <p style={{ margin: '2px 0 0', fontSize: 12, color: '#888888' }}>
-              Step {step} of 2
-            </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+            {mode !== 'choose' && (
+              <button type="button" onClick={handleHeaderBack} style={{
+                width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
+                background: '#F5F5F5', border: '1px solid #E8E8E8',
+                color: '#666666', cursor: 'pointer', fontSize: 16, lineHeight: 1,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>‹</button>
+            )}
+            <div style={{ minWidth: 0 }}>
+              <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: '#111111', fontFamily: "'DM Sans', sans-serif" }}>
+                {meta.title}
+              </h2>
+              <p style={{ margin: '2px 0 0', fontSize: 12, color: '#888888' }}>
+                {mode === 'manual' ? `Step ${step} of 2` : meta.subtitle}
+              </p>
+            </div>
           </div>
           <button onClick={onClose} style={{
-            width: 32, height: 32, borderRadius: '50%',
+            width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
             background: '#F5F5F5', border: '1px solid #E8E8E8',
             color: '#666666', cursor: 'pointer', fontSize: 18, lineHeight: 1,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -256,91 +417,149 @@ export function AddProfileModal({ onAdd, onClose }) {
 
         <form onSubmit={handleSubmit} style={{ padding: '16px 24px 24px', display: 'flex', flexDirection: 'column', gap: 18 }}>
 
-          {/* ── Import from file (always visible on step 1) ── */}
-          {step === 1 && (
-            <div>
-              <label style={LABEL_STYLE}>Import from file</label>
-              <input
-                ref={importFileRef}
-                type="file"
-                accept={ACCEPT}
-                onChange={handleImportFile}
-                style={{ display: 'none' }}
-              />
+          {/* ── CHOOSE ─────────────────────────────────────────────── */}
+          {mode === 'choose' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <ModeCard icon="🔗" title="From a URL" desc="Paste a profile link and we'll pull the details"
+                onClick={() => setMode('url')} />
+              <ModeCard icon="📥" title="Import" desc="Upload a screenshot/file, or paste text"
+                onClick={() => setMode('import')} />
+              <ModeCard icon="✍️" title="Manual entry" desc="Fill in the details yourself"
+                onClick={() => setMode('manual')} />
+            </div>
+          )}
 
-              {importStatus === null && (
-                <button
-                  type="button"
-                  onClick={() => importFileRef.current?.click()}
-                  style={{
-                    width: '100%', padding: '11px 14px', borderRadius: 12,
-                    background: '#F5F5F5', border: '1.5px dashed #D0D0D0',
-                    color: '#666666', cursor: 'pointer',
-                    fontSize: 13, fontWeight: 500,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-                  }}>
-                  <span style={{ fontSize: 15 }}>📎</span>
-                  Upload a screenshot, PDF, or dating profile
-                </button>
-              )}
+          {/* ── URL ────────────────────────────────────────────────── */}
+          {mode === 'url' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {urlStatus === 'done' ? (
+                <DoneBanner label="that page" onRetry={() => setUrlStatus(null)} onContinue={() => setMode('manual')} />
+              ) : (
+                <>
+                  <div>
+                    <label style={LABEL_STYLE}>Profile URL</label>
+                    <input type="url" value={urlValue} onChange={e => setUrlValue(e.target.value)}
+                      placeholder="https://..." disabled={urlStatus === 'analyzing'} style={FIELD_STYLE} />
+                  </div>
 
-              {importStatus === 'analyzing' && (
-                <div style={{
-                  padding: '11px 14px', borderRadius: 12,
-                  background: '#F5F5F5', border: '1px solid #E8E8E8',
-                  color: '#888888', fontSize: 13,
-                  display: 'flex', alignItems: 'center', gap: 8,
-                }}>
-                  <span style={{ animation: 'spin 1s linear infinite', display: 'inline-block' }}>⏳</span>
-                  Analyzing {importName}…
-                </div>
-              )}
+                  {urlStatus === 'error' && <ErrorBanner>{urlError}</ErrorBanner>}
 
-              {importStatus === 'done' && (
-                <div style={{
-                  padding: '10px 14px', borderRadius: 12,
-                  background: '#F0FAF4', border: '1px solid #B8E0C8',
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
-                }}>
-                  <span style={{ fontSize: 13, color: '#2A8A5A', fontWeight: 500 }}>
-                    ✓ Pre-filled from {importName}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => { setImportStatus(null); setImportName(''); }}
-                    style={{
-                      background: 'none', border: 'none', cursor: 'pointer',
-                      color: '#888888', fontSize: 11, padding: 0, flexShrink: 0,
-                    }}>
-                    Try another
+                  <button type="button" onClick={handleUrlExtract}
+                    disabled={!urlValue.trim() || urlStatus === 'analyzing'}
+                    style={PRIMARY_BTN_STYLE(urlValue.trim() && urlStatus !== 'analyzing')}>
+                    {urlStatus === 'analyzing' ? (
+                      <><span style={{ animation: 'spin 1s linear infinite', display: 'inline-block' }}>⏳</span> Fetching…</>
+                    ) : '✦ Extract Info'}
                   </button>
-                </div>
-              )}
 
-              {importStatus === 'error' && (
-                <div style={{
-                  padding: '10px 14px', borderRadius: 12,
-                  background: '#FEF5F5', border: '1px solid #F0CCCC',
-                  display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8,
-                }}>
-                  <span style={{ fontSize: 13, color: '#C04040', lineHeight: 1.4 }}>
-                    {importError}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => { setImportStatus(null); setImportName(''); setImportError(''); }}
-                    style={{
-                      background: 'none', border: 'none', cursor: 'pointer',
-                      color: '#888888', fontSize: 11, padding: 0, flexShrink: 0,
-                    }}>
-                    Try again
-                  </button>
-                </div>
+                  <p style={{ margin: 0, fontSize: 11, color: '#AAAAAA', lineHeight: 1.5 }}>
+                    Works best for public pages. Sites that require login (most dating apps) usually can't be
+                    fetched this way — use Import to paste the text instead.
+                  </p>
+
+                  <SkipManualLink onClick={() => setMode('manual')} />
+                </>
               )}
             </div>
           )}
 
-          {step === 1 && (
+          {/* ── IMPORT ─────────────────────────────────────────────── */}
+          {mode === 'import' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {importStatus === 'done' ? (
+                <DoneBanner label={importName} onRetry={resetImport} onContinue={() => setMode('manual')} />
+              ) : (
+                <>
+                  {importStatus === null && (
+                    <div style={{ display: 'flex', gap: 2, background: '#F5F5F5', borderRadius: 20, padding: 2, alignSelf: 'flex-start' }}>
+                      {[['file', '📎 Upload'], ['paste', '📋 Paste text']].map(([tab, label]) => (
+                        <button key={tab} type="button" onClick={() => setImportTab(tab)}
+                          style={{
+                            padding: '5px 12px', borderRadius: 16, fontSize: 12, fontWeight: 600,
+                            border: 'none', cursor: 'pointer',
+                            background: importTab === tab ? '#FFFFFF' : 'transparent',
+                            color: importTab === tab ? '#111111' : '#999999',
+                            boxShadow: importTab === tab ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                          }}>
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  <input
+                    ref={importFileRef}
+                    type="file"
+                    accept={ACCEPT}
+                    onChange={handleImportFile}
+                    style={{ display: 'none' }}
+                  />
+
+                  {importStatus === null && importTab === 'file' && (
+                    <button type="button" onClick={() => importFileRef.current?.click()} style={{
+                      width: '100%', padding: '22px 16px', borderRadius: 14,
+                      background: '#FAFAFA', border: '2px dashed #E0E0E0',
+                      color: '#666666', cursor: 'pointer',
+                      fontSize: 13, fontWeight: 500,
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+                    }}>
+                      <span style={{ fontSize: 22 }}>📎</span>
+                      Upload a screenshot, PDF, or dating profile
+                    </button>
+                  )}
+
+                  {importStatus === null && importTab === 'paste' && (
+                    <>
+                      <textarea
+                        value={pasteText}
+                        onChange={e => setPasteText(e.target.value)}
+                        placeholder="Paste their bio, dating profile, or a conversation…"
+                        rows={6}
+                        style={{ ...FIELD_STYLE, fontSize: 13, resize: 'none', lineHeight: 1.5 }}
+                      />
+                      <button type="button" onClick={handlePasteExtract} disabled={!pasteText.trim()}
+                        style={PRIMARY_BTN_STYLE(!!pasteText.trim())}>
+                        ✦ Extract Info
+                      </button>
+                    </>
+                  )}
+
+                  {importStatus === 'analyzing' && (
+                    <div style={{
+                      padding: '11px 14px', borderRadius: 12,
+                      background: '#F5F5F5', border: '1px solid #E8E8E8',
+                      color: '#888888', fontSize: 13,
+                      display: 'flex', alignItems: 'center', gap: 8,
+                    }}>
+                      <span style={{ animation: 'spin 1s linear infinite', display: 'inline-block' }}>⏳</span>
+                      Analyzing {importName}…
+                    </div>
+                  )}
+
+                  {importStatus === 'error' && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      <div style={{
+                        padding: '10px 14px', borderRadius: 12,
+                        background: '#FEF5F5', border: '1px solid #F0CCCC',
+                        display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8,
+                      }}>
+                        <span style={{ fontSize: 13, color: '#C04040', lineHeight: 1.4 }}>{importError}</span>
+                        <button type="button" onClick={resetImport} style={{
+                          background: 'none', border: 'none', cursor: 'pointer',
+                          color: '#888888', fontSize: 11, padding: 0, flexShrink: 0,
+                        }}>Try again</button>
+                      </div>
+                    </div>
+                  )}
+
+                  {importStatus === null && <SkipManualLink onClick={() => setMode('manual')} />}
+                </>
+              )}
+            </div>
+          )}
+
+          {/* ── MANUAL — step 1 ────────────────────────────────────── */}
+          {mode === 'manual' && step === 1 && (
             <>
               <div>
                 <label style={LABEL_STYLE}>Name *</label>
@@ -384,19 +603,14 @@ export function AddProfileModal({ onAdd, onClose }) {
               </div>
 
               <button type="button" onClick={() => setStep(2)} disabled={!form.name.trim()}
-                style={{
-                  width: '100%', padding: '14px', borderRadius: 14,
-                  background: form.name.trim() ? 'linear-gradient(135deg, #C8415A 0%, #A8314A 100%)' : '#F5F5F5',
-                  color: form.name.trim() ? '#FFFFFF' : '#AAAAAA',
-                  border: 'none', cursor: form.name.trim() ? 'pointer' : 'not-allowed',
-                  fontSize: 14, fontWeight: 700, letterSpacing: '0.02em',
-                }}>
+                style={PRIMARY_BTN_STYLE(!!form.name.trim())}>
                 Continue →
               </button>
             </>
           )}
 
-          {step === 2 && (
+          {/* ── MANUAL — step 2 ────────────────────────────────────── */}
+          {mode === 'manual' && step === 2 && (
             <>
               <div>
                 <label style={LABEL_STYLE}>Interests</label>
@@ -432,13 +646,9 @@ export function AddProfileModal({ onAdd, onClose }) {
                   border: '1px solid #E8E8E8',
                   cursor: 'pointer', fontSize: 14, fontWeight: 600,
                 }}>← Back</button>
-                <button type="submit" style={{
-                  flex: 2, padding: '14px', borderRadius: 14,
-                  background: 'linear-gradient(135deg, #C8415A 0%, #A8314A 100%)',
-                  color: '#FFFFFF', border: 'none', cursor: 'pointer',
-                  fontSize: 14, fontWeight: 700, letterSpacing: '0.02em',
-                  boxShadow: '0 4px 16px rgba(200,65,90,0.3)',
-                }}>Add to Book</button>
+                <button type="submit" style={{ ...PRIMARY_BTN_STYLE(true), flex: 2, width: 'auto' }}>
+                  Add to Book
+                </button>
               </div>
             </>
           )}

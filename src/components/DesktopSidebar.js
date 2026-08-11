@@ -4,16 +4,16 @@ function DBMark() {
   return (
     <div style={{
       width: 36, height: 36, borderRadius: 11,
-      background: 'linear-gradient(145deg, #C8415A 0%, #A8314A 100%)',
+      background: 'linear-gradient(145deg, #7A2848 0%, #5C1D37 100%)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       flexShrink: 0,
-      boxShadow: '0 2px 10px rgba(200,65,90,0.28)',
+      boxShadow: '0 2px 10px rgba(122,40,72,0.28)',
     }}>
       <svg width={18} height={18} viewBox="0 0 20 20" fill="none">
         <path d="M4 3h7a5 5 0 010 10H4V3z" fill="white" fillOpacity="0.95" />
         <path d="M4 3v14" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" strokeLinecap="round" />
         <circle cx="14.5" cy="14.5" r="3.5" fill="white" fillOpacity="0.9" />
-        <path d="M13 14.5h3M14.5 13v3" stroke="rgba(200,65,90,0.9)" strokeWidth="1.4" strokeLinecap="round" />
+        <path d="M13 14.5h3M14.5 13v3" stroke="rgba(122,40,72,0.9)" strokeWidth="1.4" strokeLinecap="round" />
       </svg>
     </div>
   );
@@ -24,8 +24,8 @@ function NavItem({ icon, label, active, onClick }) {
     <button onClick={onClick} style={{
       width: '100%', display: 'flex', alignItems: 'center', gap: 12,
       padding: '11px 16px', borderRadius: 12, border: 'none', cursor: 'pointer',
-      background: active ? 'rgba(200,65,90,0.08)' : 'transparent',
-      color: active ? '#C8415A' : '#666666',
+      background: active ? 'rgba(122,40,72,0.08)' : 'transparent',
+      color: active ? '#7A2848' : '#666666',
       fontSize: 14, fontWeight: active ? 600 : 400,
       transition: 'background 0.15s, color 0.15s',
       textAlign: 'left',
@@ -115,10 +115,10 @@ export function DesktopSidebar({ activeTab, onTabChange, onAddPress, compact = f
       {!compact && (
         <button onClick={onAddPress} style={{
           width: '100%', padding: '12px 16px', borderRadius: 12, border: 'none', cursor: 'pointer',
-          background: 'linear-gradient(135deg, #C8415A 0%, #A8314A 100%)',
+          background: 'linear-gradient(135deg, #7A2848 0%, #5C1D37 100%)',
           color: '#FFFFFF', fontSize: 14, fontWeight: 600,
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-          boxShadow: '0 4px 16px rgba(200,65,90,0.3)',
+          boxShadow: '0 4px 16px rgba(122,40,72,0.3)',
           marginTop: 'auto',
         }}>
           <span style={{ fontSize: 18, lineHeight: 1 }}>+</span>
@@ -149,8 +149,8 @@ function CompactNavBtn({ active, onClick, icon, label, accent }) {
     <button onClick={onClick} title={label} style={{
       width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
       padding: '10px 0', border: 'none', cursor: 'pointer', borderRadius: 10,
-      background: active ? 'rgba(200,65,90,0.08)' : accent ? 'rgba(200,65,90,0.06)' : 'transparent',
-      color: active || accent ? '#C8415A' : '#AAAAAA',
+      background: active ? 'rgba(122,40,72,0.08)' : accent ? 'rgba(122,40,72,0.06)' : 'transparent',
+      color: active || accent ? '#7A2848' : '#AAAAAA',
       fontSize: 10, fontWeight: active ? 600 : 400,
     }}>
       {icon}

@@ -3,7 +3,7 @@ import { useBreakpoint } from '../hooks/useBreakpoint';
 
 // ── Sub-components ────────────────────────────────────────────────────────
 
-function KpiTile({ value, label, sub, color = '#C8415A', icon }) {
+function KpiTile({ value, label, sub, color = '#7A2848', icon }) {
   return (
     <div style={{
       background: '#FFFFFF', borderRadius: 16, border: '1px solid #E8E8E8',
@@ -46,7 +46,7 @@ function Card({ title, children, style = {} }) {
   );
 }
 
-function HBar({ label, value, max, color = '#C8415A', rank }) {
+function HBar({ label, value, max, color = '#7A2848', rank }) {
   const pct = max > 0 ? (value / max) * 100 : 0;
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -188,7 +188,7 @@ export function InsightsScreen({ profiles, isDesktop }) {
             : 'repeat(2, 1fr)',
           gap,
         }}>
-          <KpiTile value={activeCount} label="Currently active" sub="dating" color="#C8415A" icon="🔥" />
+          <KpiTile value={activeCount} label="Currently active" sub="dating" color="#7A2848" icon="🔥" />
           <KpiTile value={avgVibe} label="Average vibe" sub="across profiles" color="#7A3AC8" icon="⭐" />
           <KpiTile value={allInteractions.length} label="Total entries" sub="logged" color="#2A8A5A" icon="📋" />
           <KpiTile value={avgDates} label="Dates per active" sub="avg interactions" color="#B86B22" icon="📅" />
@@ -204,7 +204,7 @@ export function InsightsScreen({ profiles, isDesktop }) {
                 total={profiles.length}
                 size={isDesktop ? 150 : 120}
                 segments={[
-                  { value: statusCounts.active || 0, color: '#C8415A' },
+                  { value: statusCounts.active || 0, color: '#7A2848' },
                   { value: statusCounts.exclusive || 0, color: '#10B981' },
                   { value: statusCounts.prospect || 0, color: '#AAAAAA' },
                   { value: statusCounts.archived || 0, color: '#D4D4D4' },

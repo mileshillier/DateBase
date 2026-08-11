@@ -18,7 +18,7 @@ function StarRating({ value, onChange }) {
     <div style={{ display: 'flex', gap: 6 }}>
       {[1, 2, 3, 4, 5].map(n => (
         <button key={n} type="button" onClick={() => onChange(n === value ? 0 : n)}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 24, padding: 2, color: n <= value ? '#C8415A' : '#CCCCCC' }}>
+          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 24, padding: 2, color: n <= value ? '#7A2848' : '#CCCCCC' }}>
           {n <= value ? '★' : '☆'}
         </button>
       ))}
@@ -110,9 +110,9 @@ export function LogInteractionModal({ profiles, preselectedProfileId, onSubmit, 
                 <button key={t} type="button" onClick={() => setType(t)}
                   style={{
                     padding: '6px 12px', borderRadius: 20, fontSize: 12, fontWeight: 500,
-                    border: type === t ? '1.5px solid #C8415A' : '1.5px solid #E8E8E8',
-                    background: type === t ? 'rgba(200,65,90,0.08)' : 'transparent',
-                    color: type === t ? '#C8415A' : '#666666', cursor: 'pointer',
+                    border: type === t ? '1.5px solid #7A2848' : '1.5px solid #E8E8E8',
+                    background: type === t ? 'rgba(122,40,72,0.08)' : 'transparent',
+                    color: type === t ? '#7A2848' : '#666666', cursor: 'pointer',
                   }}>{t}</button>
               ))}
             </div>
@@ -148,11 +148,11 @@ export function LogInteractionModal({ profiles, preselectedProfileId, onSubmit, 
           <button type="submit" disabled={!profileId}
             style={{
               width: '100%', padding: '14px', borderRadius: 14,
-              background: profileId ? 'linear-gradient(135deg, #C8415A 0%, #A8314A 100%)' : '#F5F5F5',
+              background: profileId ? 'linear-gradient(135deg, #7A2848 0%, #5C1D37 100%)' : '#F5F5F5',
               color: profileId ? '#FFFFFF' : '#AAAAAA',
               border: 'none', cursor: profileId ? 'pointer' : 'not-allowed',
               fontSize: 14, fontWeight: 700, letterSpacing: '0.02em',
-              boxShadow: profileId ? '0 4px 16px rgba(200,65,90,0.3)' : 'none',
+              boxShadow: profileId ? '0 4px 16px rgba(122,40,72,0.3)' : 'none',
             }}>
             Save Interaction
           </button>

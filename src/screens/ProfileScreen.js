@@ -16,13 +16,13 @@ const TYPE_ICONS = {
 function StarDisplay({ value }) {
   if (!value) return null;
   return (
-    <span style={{ fontSize: 14, letterSpacing: 1, color: '#C8415A' }}>
+    <span style={{ fontSize: 14, letterSpacing: 1, color: '#7A2848' }}>
       {'★'.repeat(value)}{'☆'.repeat(5 - value)}
     </span>
   );
 }
 
-function Tag({ children, color = '#C8415A' }) {
+function Tag({ children, color = '#7A2848' }) {
   return (
     <span style={{
       fontSize: 12, padding: '4px 10px', borderRadius: 20,
@@ -106,9 +106,9 @@ function LogEntryFlyout({ onLog, onImport }) {
         style={{
           display: 'flex', alignItems: 'center', gap: 6,
           padding: '9px 18px', borderRadius: 12, border: 'none', cursor: 'pointer',
-          background: 'linear-gradient(135deg, #C8415A 0%, #A8314A 100%)',
+          background: 'linear-gradient(135deg, #7A2848 0%, #5C1D37 100%)',
           color: '#FFFFFF', fontSize: 13, fontWeight: 700,
-          boxShadow: '0 4px 16px rgba(200,65,90,0.28)',
+          boxShadow: '0 4px 16px rgba(122,40,72,0.28)',
         }}
       >
         ✦ Log Entry
@@ -125,7 +125,7 @@ function LogEntryFlyout({ onLog, onImport }) {
           overflow: 'hidden', minWidth: 196,
         }}>
           <button
-            onMouseEnter={e => e.currentTarget.style.background = '#FEF2F4'}
+            onMouseEnter={e => e.currentTarget.style.background = '#F6EBEF'}
             onMouseLeave={e => e.currentTarget.style.background = 'none'}
             style={btnStyle}
             onClick={() => { setOpen(false); onLog(); }}
@@ -221,7 +221,7 @@ function MobileLayout({ profile, onLog, onImport, onUpdate }) {
           <div style={{ display: 'flex', gap: 4 }}>
             {[1,2,3,4,5].map(n => (
               <button key={n} onClick={() => onUpdate(profile.id, { vibe: n === profile.vibe ? 0 : n })}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 22, color: n <= profile.vibe ? '#C8415A' : '#EEEEEE', padding: 2 }}>
+                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 22, color: n <= profile.vibe ? '#7A2848' : '#EEEEEE', padding: 2 }}>
                 {n <= profile.vibe ? '★' : '☆'}
               </button>
             ))}
@@ -290,9 +290,9 @@ function MobileSections({ profile, onUpdate, editingNotes, setEditingNotes, note
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {profile.conversationHighlights.map(h => (
               <div key={h.id} style={{ display: 'flex', gap: 10 }}>
-                <div style={{ width: 3, borderRadius: 3, background: 'rgba(200,65,90,0.25)', flexShrink: 0 }} />
+                <div style={{ width: 3, borderRadius: 3, background: 'rgba(122,40,72,0.25)', flexShrink: 0 }} />
                 <div>
-                  {h.label && <span style={{ fontSize: 10, fontWeight: 700, color: '#C8415A', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 2 }}>{h.label}</span>}
+                  {h.label && <span style={{ fontSize: 10, fontWeight: 700, color: '#7A2848', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 2 }}>{h.label}</span>}
                   <p style={{ margin: 0, fontSize: 13, color: '#444444', lineHeight: 1.5 }}>{h.text}</p>
                   <span style={{ fontSize: 10, color: '#CCCCCC' }}>{h.source} · {formatDate(h.date)}</span>
                 </div>
@@ -308,7 +308,7 @@ function MobileSections({ profile, onUpdate, editingNotes, setEditingNotes, note
               style={{ width: '100%', background: '#F5F5F5', border: '1px solid #E8E8E8', borderRadius: 10, padding: '10px 12px', color: '#111111', fontSize: 13, outline: 'none', resize: 'none', fontFamily: "'DM Sans', sans-serif", lineHeight: 1.6 }} />
             <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={() => setEditingNotes(false)} style={{ flex: 1, padding: '8px', borderRadius: 10, background: 'transparent', color: '#888888', border: '1px solid #E8E8E8', cursor: 'pointer', fontSize: 13 }}>Cancel</button>
-              <button onClick={() => { onUpdate(profile.id, { notes: notesValue }); setEditingNotes(false); }} style={{ flex: 2, padding: '8px', borderRadius: 10, background: 'rgba(200,65,90,0.08)', color: '#C8415A', border: '1px solid rgba(200,65,90,0.2)', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>Save</button>
+              <button onClick={() => { onUpdate(profile.id, { notes: notesValue }); setEditingNotes(false); }} style={{ flex: 2, padding: '8px', borderRadius: 10, background: 'rgba(122,40,72,0.08)', color: '#7A2848', border: '1px solid rgba(122,40,72,0.2)', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>Save</button>
             </div>
           </div>
         ) : (
@@ -433,7 +433,7 @@ function DesktopLayout({ profile, onLog, onImport, onUpdate }) {
               {[1,2,3,4,5].map(n => (
                 <button key={n}
                   onClick={() => onUpdate(profile.id, { vibe: n === profile.vibe ? 0 : n })}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: n <= profile.vibe ? '#C8415A' : '#E8E8E8', padding: 1, lineHeight: 1 }}>
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: n <= profile.vibe ? '#7A2848' : '#E8E8E8', padding: 1, lineHeight: 1 }}>
                   {n <= profile.vibe ? '★' : '☆'}
                 </button>
               ))}
@@ -479,7 +479,7 @@ function DesktopLayout({ profile, onLog, onImport, onUpdate }) {
             <div>
               <SectionLabel>First Impression</SectionLabel>
               <div style={{
-                borderLeft: '3px solid #C8415A',
+                borderLeft: '3px solid #7A2848',
                 paddingLeft: 14, marginLeft: 2,
               }}>
                 <p style={{ margin: 0, fontSize: 14, color: '#333333', lineHeight: 1.65, fontStyle: 'italic' }}>
@@ -538,10 +538,10 @@ function DesktopLayout({ profile, onLog, onImport, onUpdate }) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {profile.conversationHighlights.map(h => (
                   <div key={h.id} style={{ display: 'flex', gap: 10 }}>
-                    <div style={{ width: 3, minHeight: 16, borderRadius: 3, background: 'rgba(200,65,90,0.22)', flexShrink: 0, marginTop: 3 }} />
+                    <div style={{ width: 3, minHeight: 16, borderRadius: 3, background: 'rgba(122,40,72,0.22)', flexShrink: 0, marginTop: 3 }} />
                     <div>
                       {h.label && (
-                        <span style={{ fontSize: 9, fontWeight: 700, color: '#C8415A', textTransform: 'uppercase', letterSpacing: '0.07em', display: 'block', marginBottom: 2 }}>
+                        <span style={{ fontSize: 9, fontWeight: 700, color: '#7A2848', textTransform: 'uppercase', letterSpacing: '0.07em', display: 'block', marginBottom: 2 }}>
                           {h.label}
                         </span>
                       )}
@@ -566,7 +566,7 @@ function DesktopLayout({ profile, onLog, onImport, onUpdate }) {
                 />
                 <div style={{ display: 'flex', gap: 6 }}>
                   <button onClick={() => setEditingNotes(false)} style={{ flex: 1, padding: '7px', borderRadius: 8, background: 'transparent', color: '#888888', border: '1px solid #E8E8E8', cursor: 'pointer', fontSize: 12 }}>Cancel</button>
-                  <button onClick={() => { onUpdate(profile.id, { notes: notesValue }); setEditingNotes(false); }} style={{ flex: 2, padding: '7px', borderRadius: 8, background: 'rgba(200,65,90,0.08)', color: '#C8415A', border: '1px solid rgba(200,65,90,0.2)', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Save</button>
+                  <button onClick={() => { onUpdate(profile.id, { notes: notesValue }); setEditingNotes(false); }} style={{ flex: 2, padding: '7px', borderRadius: 8, background: 'rgba(122,40,72,0.08)', color: '#7A2848', border: '1px solid rgba(122,40,72,0.2)', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Save</button>
                 </div>
               </div>
             ) : (
