@@ -16,7 +16,7 @@
     "react-scripts": "5.0.1",
     "web-vitals": "^2.1.4"
   },
-  "homepage": "https://mileshillier.github.io/date-base",
+
   "proxy": "http://localhost:3002",
   "scripts": {
     "start": "react-scripts start",
