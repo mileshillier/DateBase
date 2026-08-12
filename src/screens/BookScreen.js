@@ -13,7 +13,7 @@ function VibeBar({ vibe }) {
       {[1,2,3,4,5].map(n => (
         <div key={n} style={{
           width: 6, height: 6, borderRadius: '50%',
-          background: n <= vibe ? '#C8415A' : '#E8E8E8',
+          background: n <= vibe ? '#7A2848' : '#E8E8E8',
         }} />
       ))}
     </div>
@@ -42,9 +42,9 @@ function ProfileRow({ profile, onOpen, isActive }) {
     <button onClick={() => onOpen(profile.id)}
       style={{
         width: '100%', display: 'flex', alignItems: 'center', gap: 12,
-        padding: '12px 16px', background: isActive ? '#FEF2F4' : 'none',
+        padding: '12px 16px', background: isActive ? '#F6EBEF' : 'none',
         border: 'none', cursor: 'pointer', textAlign: 'left',
-        borderLeft: isActive ? '3px solid #C8415A' : '3px solid transparent',
+        borderLeft: isActive ? '3px solid #7A2848' : '3px solid transparent',
         transition: 'background 0.12s',
       }}>
       <div style={{
@@ -147,7 +147,7 @@ export function BookScreen({ profiles, onOpenProfile, selectedProfileId, isDeskt
               {profiles.length} {profiles.length === 1 ? 'person' : 'people'}
             </p>
           </div>
-          <HeaderStat value={activeCount} label="Active" color="#C8415A" />
+          <HeaderStat value={activeCount} label="Active" color="#7A2848" />
           <HeaderStat value={avgVibe} label="Avg Vibe" color="#7A3AC8" />
           <div style={{ padding: '0 0 0 16px', textAlign: 'center' }}>
             <div style={{ fontSize: 20, fontWeight: 700, color: '#2A8A5A', fontFamily: "'DM Sans', sans-serif", lineHeight: 1 }}>
@@ -188,9 +188,9 @@ export function BookScreen({ profiles, onOpenProfile, selectedProfileId, isDeskt
             style={{
               padding: '4px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600,
               whiteSpace: 'nowrap', cursor: 'pointer', letterSpacing: '0.03em',
-              border: filterStatus === opt.value ? '1.5px solid #C8415A' : '1.5px solid #E8E8E8',
-              background: filterStatus === opt.value ? 'rgba(200,65,90,0.08)' : '#FFFFFF',
-              color: filterStatus === opt.value ? '#C8415A' : '#888888',
+              border: filterStatus === opt.value ? '1.5px solid #7A2848' : '1.5px solid #E8E8E8',
+              background: filterStatus === opt.value ? 'rgba(122,40,72,0.08)' : '#FFFFFF',
+              color: filterStatus === opt.value ? '#7A2848' : '#888888',
             }}>
             {opt.label}
           </button>

@@ -33,7 +33,7 @@ function getFileKind(file) {
 }
 
 const FILE_KIND_ICON = { image: '🖼️', pdf: '📄', text: '📝', doc: '📝' };
-const FILE_KIND_COLOR = { image: '#7A3AC8', pdf: '#C8415A', text: '#2A8A5A', doc: '#2A8A5A' };
+const FILE_KIND_COLOR = { image: '#7A3AC8', pdf: '#7A2848', text: '#2A8A5A', doc: '#2A8A5A' };
 
 // ── File analysis via local API server ───────────────────────────────────
 // Proxied through CRA dev server → http://localhost:3002/api/analyze-file
@@ -249,7 +249,7 @@ export function ConversationImportModal({ profiles, preselectedProfileId, onImpo
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 20px', gap: 16 }}>
               <div style={{
                 width: 48, height: 48, borderRadius: '50%',
-                border: '3px solid #E8E8E8', borderTopColor: '#C8415A',
+                border: '3px solid #E8E8E8', borderTopColor: '#7A2848',
                 animation: 'spin 0.8s linear infinite',
               }} />
               <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
@@ -285,11 +285,11 @@ export function ConversationImportModal({ profiles, preselectedProfileId, onImpo
                   disabled={!anySelected}
                   style={{
                     flex: 2, padding: '12px', borderRadius: 14,
-                    background: anySelected ? 'linear-gradient(135deg, #C8415A 0%, #A8314A 100%)' : '#F5F5F5',
+                    background: anySelected ? 'linear-gradient(135deg, #7A2848 0%, #5C1D37 100%)' : '#F5F5F5',
                     color: anySelected ? '#FFFFFF' : '#AAAAAA',
                     border: 'none', cursor: anySelected ? 'pointer' : 'not-allowed',
                     fontSize: 13, fontWeight: 700,
-                    boxShadow: anySelected ? '0 4px 16px rgba(200,65,90,0.3)' : 'none',
+                    boxShadow: anySelected ? '0 4px 16px rgba(122,40,72,0.3)' : 'none',
                   }}>
                   Apply to Profile
                 </button>
@@ -303,12 +303,12 @@ export function ConversationImportModal({ profiles, preselectedProfileId, onImpo
               {/* Error banner */}
               {apiError && (
                 <div style={{
-                  background: '#FEF2F4', border: '1px solid rgba(200,65,90,0.25)',
+                  background: '#F6EBEF', border: '1px solid rgba(122,40,72,0.25)',
                   borderRadius: 12, padding: '12px 14px',
                   display: 'flex', gap: 10, alignItems: 'flex-start',
                 }}>
                   <span style={{ fontSize: 16, flexShrink: 0 }}>⚠️</span>
-                  <p style={{ margin: 0, fontSize: 12, color: '#C8415A', lineHeight: 1.5 }}>{apiError}</p>
+                  <p style={{ margin: 0, fontSize: 12, color: '#7A2848', lineHeight: 1.5 }}>{apiError}</p>
                 </div>
               )}
 
@@ -426,12 +426,12 @@ export function ConversationImportModal({ profiles, preselectedProfileId, onImpo
                 style={{
                   width: '100%', padding: '14px', borderRadius: 14, border: 'none',
                   background: canExtract
-                    ? 'linear-gradient(135deg, #C8415A 0%, #A8314A 100%)'
+                    ? 'linear-gradient(135deg, #7A2848 0%, #5C1D37 100%)'
                     : '#F5F5F5',
                   color: canExtract ? '#FFFFFF' : '#AAAAAA',
                   cursor: canExtract ? 'pointer' : 'not-allowed',
                   fontSize: 14, fontWeight: 700, letterSpacing: '0.02em',
-                  boxShadow: canExtract ? '0 4px 16px rgba(200,65,90,0.3)' : 'none',
+                  boxShadow: canExtract ? '0 4px 16px rgba(122,40,72,0.3)' : 'none',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                 }}
               >

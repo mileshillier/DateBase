@@ -2,7 +2,7 @@
 
 export const STATUS_CONFIG = {
   prospect:  { label: 'Prospect',  color: '#888888', dot: '#AAAAAA' },
-  active:    { label: 'Active',    color: '#C8415A', dot: '#C8415A' },
+  active:    { label: 'Active',    color: '#7A2848', dot: '#7A2848' },
   exclusive: { label: 'Exclusive', color: '#10B981', dot: '#10B981' },
   archived:  { label: 'Archived',  color: '#AAAAAA', dot: '#CCCCCC' },
   ended:     { label: 'Ended',     color: '#888888', dot: '#AAAAAA' },
@@ -70,7 +70,7 @@ export function initials(name) {
 // ── Avatar colors — warm, light backgrounds ───────────────────────────────
 
 export const AVATAR_COLORS = [
-  { bg: '#FDEAED', text: '#C8415A' },
+  { bg: '#F5E7EB', text: '#7A2848' },
   { bg: '#EAF0FD', text: '#3A6BC8' },
   { bg: '#EAFAF0', text: '#2A8A5A' },
   { bg: '#FDF4EA', text: '#B86B22' },

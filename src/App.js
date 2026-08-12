@@ -23,15 +23,15 @@ function EmptyDetailPanel() {
     }}>
       <div style={{
         width: 64, height: 64, borderRadius: 20,
-        background: 'linear-gradient(145deg, #C8415A 0%, #A8314A 100%)',
+        background: 'linear-gradient(145deg, #7A2848 0%, #5C1D37 100%)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        boxShadow: '0 4px 20px rgba(200,65,90,0.22)', opacity: 0.85,
+        boxShadow: '0 4px 20px rgba(122,40,72,0.22)', opacity: 0.85,
       }}>
         <svg width={28} height={28} viewBox="0 0 20 20" fill="none">
           <path d="M4 3h7a5 5 0 010 10H4V3z" fill="white" fillOpacity="0.95" />
           <path d="M4 3v14" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" strokeLinecap="round" />
           <circle cx="14.5" cy="14.5" r="3.5" fill="white" fillOpacity="0.9" />
-          <path d="M13 14.5h3M14.5 13v3" stroke="rgba(200,65,90,0.9)" strokeWidth="1.4" strokeLinecap="round" />
+          <path d="M13 14.5h3M14.5 13v3" stroke="rgba(122,40,72,0.9)" strokeWidth="1.4" strokeLinecap="round" />
         </svg>
       </div>
       <p style={{ margin: 0, fontSize: 15, fontWeight: 600, color: '#CCCCCC', fontFamily: "'DM Sans', sans-serif" }}>
@@ -194,11 +194,11 @@ export default function App() {
               }}>
                 <button onClick={closeProfile} style={{
                   display: 'flex', alignItems: 'center', gap: 4,
-                  color: '#C8415A', background: 'none', border: 'none',
+                  color: '#7A2848', background: 'none', border: 'none',
                   cursor: 'pointer', fontSize: 14, fontWeight: 500, padding: 0,
                 }}>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                    <path d="M15 18l-6-6 6-6" stroke="#C8415A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M15 18l-6-6 6-6" stroke="#7A2848" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                   Book
                 </button>

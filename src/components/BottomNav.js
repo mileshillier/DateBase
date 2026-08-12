@@ -1,10 +1,10 @@
 function BookIcon({ active }) {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-      <path d="M4 19.5A2.5 2.5 0 016.5 17H20" stroke={active ? '#C8415A' : '#AAAAAA'} strokeWidth="1.75" strokeLinecap="round" />
+      <path d="M4 19.5A2.5 2.5 0 016.5 17H20" stroke={active ? '#7A2848' : '#AAAAAA'} strokeWidth="1.75" strokeLinecap="round" />
       <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"
-        stroke={active ? '#C8415A' : '#AAAAAA'} strokeWidth="1.75"
-        fill={active ? 'rgba(200,65,90,0.1)' : 'none'} />
+        stroke={active ? '#7A2848' : '#AAAAAA'} strokeWidth="1.75"
+        fill={active ? 'rgba(122,40,72,0.1)' : 'none'} />
     </svg>
   );
 }
@@ -13,14 +13,14 @@ function InsightIcon({ active }) {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
       <rect x="3" y="12" width="4" height="9" rx="1"
-        fill={active ? '#C8415A' : 'none'}
-        stroke={active ? '#C8415A' : '#AAAAAA'} strokeWidth="1.75" />
+        fill={active ? '#7A2848' : 'none'}
+        stroke={active ? '#7A2848' : '#AAAAAA'} strokeWidth="1.75" />
       <rect x="10" y="7" width="4" height="14" rx="1"
-        fill={active ? 'rgba(200,65,90,0.3)' : 'none'}
-        stroke={active ? '#C8415A' : '#AAAAAA'} strokeWidth="1.75" />
+        fill={active ? 'rgba(122,40,72,0.3)' : 'none'}
+        stroke={active ? '#7A2848' : '#AAAAAA'} strokeWidth="1.75" />
       <rect x="17" y="3" width="4" height="18" rx="1"
-        fill={active ? 'rgba(200,65,90,0.15)' : 'none'}
-        stroke={active ? '#C8415A' : '#AAAAAA'} strokeWidth="1.75" />
+        fill={active ? 'rgba(122,40,72,0.15)' : 'none'}
+        stroke={active ? '#7A2848' : '#AAAAAA'} strokeWidth="1.75" />
     </svg>
   );
 }
@@ -28,7 +28,7 @@ function InsightIcon({ active }) {
 export function BottomNav({ activeTab, onTabChange, onAddPress }) {
   const label = (tab) => ({
     fontSize: 11, fontWeight: activeTab === tab ? 600 : 400,
-    color: activeTab === tab ? '#C8415A' : '#AAAAAA',
+    color: activeTab === tab ? '#7A2848' : '#AAAAAA',
     letterSpacing: '0.01em', marginTop: 1,
   });
 
@@ -55,8 +55,8 @@ export function BottomNav({ activeTab, onTabChange, onAddPress }) {
         <button onClick={onAddPress}
           style={{
             width: 52, height: 52, borderRadius: '50%', border: 'none', cursor: 'pointer',
-            background: 'linear-gradient(135deg, #C8415A 0%, #A8314A 100%)',
-            boxShadow: '0 4px 20px rgba(200,65,90,0.45)',
+            background: 'linear-gradient(135deg, #7A2848 0%, #5C1D37 100%)',
+            boxShadow: '0 4px 20px rgba(122,40,72,0.45)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             marginTop: -16, flexShrink: 0,
           }}>

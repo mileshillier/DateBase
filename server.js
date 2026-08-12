@@ -33,6 +33,62 @@ Field types to extract when present:
 
 Only include fields with clear evidence in the content. Do not invent anything.`;
 
+// ── Shared: send content to Claude and parse the findings JSON array ───────
+
+async function extractFindings(tag, messageContent) {
+  const message = await getClient().messages.create({
+    model: 'claude-sonnet-5',
+    max_tokens: 16000,
+    thinking: { type: 'disabled' },
+    messages: [{ role: 'user', content: messageContent }],
+  });
+
+  // Find the text block — content may include non-text blocks (e.g. tool_use)
+  const textBlock = message.content.find(b => b.type === 'text');
+  console.log(`[${tag}] content blocks:`, message.content.map(b => b.type));
+  if (!textBlock || !textBlock.text) {
+    console.log(`[${tag}] no text block found`);
+    return [];
+  }
+
+  const raw = textBlock.text.trim();
+  console.log(`[${tag}] raw response (first 500):`, raw.slice(0, 500));
+
+  // Pull out the JSON array even if the model wraps it in prose
+  const match = raw.match(/\[[\s\S]*\]/);
+  if (!match) {
+    console.log(`[${tag}] no JSON array found in response`);
+    return [];
+  }
+
+  // Parse — LLMs sometimes emit trailing commas or minor formatting issues
+  let raw_findings;
+  try {
+    raw_findings = JSON.parse(match[0]);
+  } catch (_) {
+    // Strip trailing commas before ] or } and retry
+    const cleaned = match[0]
+      .replace(/,(\s*[}\]])/g, '$1')   // trailing commas
+      .replace(/(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '"$2":'); // unquoted keys
+    try {
+      raw_findings = JSON.parse(cleaned);
+    } catch (e2) {
+      console.error(`[${tag}] JSON parse failed:`, e2.message, '\nRaw:', match[0].slice(0, 200));
+      return [];
+    }
+  }
+
+  return raw_findings
+    .filter(f => f && f.label != null && f.value != null)
+    .map(f => ({
+      label: String(f.label),
+      type: f.type === 'interests' ? 'interests' : 'fact',
+      value: f.type === 'interests'
+        ? (Array.isArray(f.value) ? f.value.map(String).filter(Boolean) : String(f.value).split(',').map(s => s.trim()).filter(Boolean))
+        : String(f.value),
+    }));
+}
+
 // ── /api/analyze-file ─────────────────────────────────────────────────────
 
 app.post('/api/analyze-file', async (req, res) => {
@@ -76,61 +132,101 @@ app.post('/api/analyze-file', async (req, res) => {
       ];
     }
 
-    const message = await getClient().messages.create({
-      model: 'claude-sonnet-5',
-      max_tokens: 16000,
-      thinking: { type: 'disabled' },
-      messages: [{ role: 'user', content: messageContent }],
-    });
-
-    // Find the text block — content may include non-text blocks (e.g. tool_use)
-    const textBlock = message.content.find(b => b.type === 'text');
-    console.log('[analyze-file] content blocks:', message.content.map(b => b.type));
-    if (!textBlock || !textBlock.text) {
-      console.log('[analyze-file] no text block found');
-      return res.json({ findings: [] });
-    }
-
-    const raw = textBlock.text.trim();
-    console.log('[analyze-file] raw response (first 500):', raw.slice(0, 500));
-
-    // Pull out the JSON array even if the model wraps it in prose
-    const match = raw.match(/\[[\s\S]*\]/);
-    if (!match) {
-      console.log('[analyze-file] no JSON array found in response');
-      return res.json({ findings: [] });
-    }
-
-    // Parse — LLMs sometimes emit trailing commas or minor formatting issues
-    let raw_findings;
-    try {
-      raw_findings = JSON.parse(match[0]);
-    } catch (_) {
-      // Strip trailing commas before ] or } and retry
-      const cleaned = match[0]
-        .replace(/,(\s*[}\]])/g, '$1')   // trailing commas
-        .replace(/(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '"$2":'); // unquoted keys
-      try {
-        raw_findings = JSON.parse(cleaned);
-      } catch (e2) {
-        console.error('[analyze-file] JSON parse failed:', e2.message, '\nRaw:', match[0].slice(0, 200));
-        return res.json({ findings: [] });
-      }
-    }
-    const findings = raw_findings
-      .filter(f => f && f.label != null && f.value != null)
-      .map(f => ({
-        label: String(f.label),
-        type: f.type === 'interests' ? 'interests' : 'fact',
-        value: f.type === 'interests'
-          ? (Array.isArray(f.value) ? f.value.map(String).filter(Boolean) : String(f.value).split(',').map(s => s.trim()).filter(Boolean))
-          : String(f.value),
-      }));
-
+    const findings = await extractFindings('analyze-file', messageContent);
     res.json({ findings });
 
   } catch (err) {
     console.error('[analyze-file]', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── /api/analyze-text ─────────────────────────────────────────────────────
+// Same extraction, but for text pasted directly into the app (no file involved).
+
+app.post('/api/analyze-text', async (req, res) => {
+  try {
+    getClient();
+
+    const { text } = req.body;
+    if (!text || !text.trim()) return res.status(400).json({ error: 'text required' });
+
+    console.log(`[analyze-text] length: ${text.length}`);
+
+    const messageContent = [
+      { type: 'text', text: `Pasted text:\n${text}\n\n${EXTRACT_PROMPT}` },
+    ];
+
+    const findings = await extractFindings('analyze-text', messageContent);
+    res.json({ findings });
+
+  } catch (err) {
+    console.error('[analyze-text]', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── /api/analyze-url ──────────────────────────────────────────────────────
+// Fetches a public page server-side (sidesteps browser CORS) and extracts
+// findings from its visible text. Pages that require login (most dating
+// apps) generally can't be reached this way — the client should suggest
+// copy/pasting the text instead.
+
+app.post('/api/analyze-url', async (req, res) => {
+  try {
+    getClient();
+
+    const { url } = req.body;
+    if (!url || !url.trim()) return res.status(400).json({ error: 'url required' });
+
+    let parsed;
+    try {
+      parsed = new URL(url.trim());
+    } catch (_) {
+      return res.status(400).json({ error: 'That doesn\'t look like a valid URL.' });
+    }
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      return res.status(400).json({ error: 'URL must start with http:// or https://' });
+    }
+
+    console.log(`[analyze-url] fetching: ${parsed.href}`);
+
+    let html;
+    try {
+      const pageRes = await fetch(parsed.href, {
+        redirect: 'follow',
+        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; DateBaseBot/1.0)' },
+      });
+      if (!pageRes.ok) {
+        return res.status(502).json({ error: `That page returned an error (${pageRes.status}). It may require login — try pasting the text instead.` });
+      }
+      html = await pageRes.text();
+    } catch (fetchErr) {
+      console.error('[analyze-url] fetch failed:', fetchErr.message);
+      return res.status(502).json({ error: 'Could not load that page. It may block automated access — try pasting the text instead.' });
+    }
+
+    // Crude tag-strip → visible text. Good enough for extraction; not a real HTML parser.
+    const pageText = html
+      .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+      .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 20000);
+
+    if (!pageText) return res.json({ findings: [] });
+
+    const messageContent = [
+      { type: 'text', text: `Page URL: ${parsed.href}\n\nPage content:\n${pageText}\n\n${EXTRACT_PROMPT}` },
+    ];
+
+    const findings = await extractFindings('analyze-url', messageContent);
+    res.json({ findings });
+
+  } catch (err) {
+    console.error('[analyze-url]', err.message);
     res.status(500).json({ error: err.message });
   }
 });
