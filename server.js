@@ -1,93 +1,11 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const Anthropic = require('@anthropic-ai/sdk');
+const { getClient, EXTRACT_PROMPT, buildFileMessageContent, extractFindings } = require('./api/_lib/extract');
 
 const app = express();
 app.use(express.json({ limit: '50mb' }));
 app.use(cors());
-
-// Lazily resolve the client so the key is read at request time,
-// not at module load — makes restarting after editing .env unnecessary.
-function getClient() {
-  const key = process.env.ANTHROPIC_API_KEY;
-  if (!key || key.startsWith('sk-ant-YOUR') || key.endsWith('...')) {
-    throw new Error('ANTHROPIC_API_KEY is not set. Add your real key to date-base/.env and restart the server.');
-  }
-  return new Anthropic({ apiKey: key });
-}
-
-// ── Extraction prompt ─────────────────────────────────────────────────────
-
-const EXTRACT_PROMPT = `Extract all useful information about this person for a dating profile tracker.
-
-Return ONLY a valid JSON array — no markdown fences, no explanation, just the raw JSON.
-Each item must follow one of these shapes:
-  { "label": "Name",       "type": "fact",      "value": "Jane Smith"              }
-  { "label": "Interests",  "type": "interests", "value": ["hiking", "wine"]        }
-
-Field types to extract when present:
-  Name, Age, Occupation, Location, Bio / About, Height, Looking For, Interests (→ use type "interests"),
-  Personality traits, Green flags, First impression, Notable facts, Conversation highlights,
-  Relationship goals, Any other detail worth remembering.
-
-Only include fields with clear evidence in the content. Do not invent anything.`;
-
-// ── Shared: send content to Claude and parse the findings JSON array ───────
-
-async function extractFindings(tag, messageContent) {
-  const message = await getClient().messages.create({
-    model: 'claude-sonnet-5',
-    max_tokens: 16000,
-    thinking: { type: 'disabled' },
-    messages: [{ role: 'user', content: messageContent }],
-  });
-
-  // Find the text block — content may include non-text blocks (e.g. tool_use)
-  const textBlock = message.content.find(b => b.type === 'text');
-  console.log(`[${tag}] content blocks:`, message.content.map(b => b.type));
-  if (!textBlock || !textBlock.text) {
-    console.log(`[${tag}] no text block found`);
-    return [];
-  }
-
-  const raw = textBlock.text.trim();
-  console.log(`[${tag}] raw response (first 500):`, raw.slice(0, 500));
-
-  // Pull out the JSON array even if the model wraps it in prose
-  const match = raw.match(/\[[\s\S]*\]/);
-  if (!match) {
-    console.log(`[${tag}] no JSON array found in response`);
-    return [];
-  }
-
-  // Parse — LLMs sometimes emit trailing commas or minor formatting issues
-  let raw_findings;
-  try {
-    raw_findings = JSON.parse(match[0]);
-  } catch (_) {
-    // Strip trailing commas before ] or } and retry
-    const cleaned = match[0]
-      .replace(/,(\s*[}\]])/g, '$1')   // trailing commas
-      .replace(/(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '"$2":'); // unquoted keys
-    try {
-      raw_findings = JSON.parse(cleaned);
-    } catch (e2) {
-      console.error(`[${tag}] JSON parse failed:`, e2.message, '\nRaw:', match[0].slice(0, 200));
-      return [];
-    }
-  }
-
-  return raw_findings
-    .filter(f => f && f.label != null && f.value != null)
-    .map(f => ({
-      label: String(f.label),
-      type: f.type === 'interests' ? 'interests' : 'fact',
-      value: f.type === 'interests'
-        ? (Array.isArray(f.value) ? f.value.map(String).filter(Boolean) : String(f.value).split(',').map(s => s.trim()).filter(Boolean))
-        : String(f.value),
-    }));
-}
 
 // ── /api/analyze-file ─────────────────────────────────────────────────────
 
@@ -99,45 +17,13 @@ app.post('/api/analyze-file', async (req, res) => {
     const { dataUrl, mimeType, fileName } = req.body;
     if (!dataUrl || !mimeType) return res.status(400).json({ error: 'dataUrl and mimeType required' });
 
-    // Strip the Data-URL header → pure base64
-    const base64Data = dataUrl.split(',')[1];
-    if (!base64Data) return res.status(400).json({ error: 'Invalid dataUrl — no base64 payload found' });
-
-    const approxMB = (base64Data.length * 0.75 / 1024 / 1024).toFixed(1);
-    console.log(`[analyze-file] file: "${fileName}" mime: ${mimeType} size: ~${approxMB}MB base64len: ${base64Data.length}`);
-
-    let messageContent;
-
-    if (mimeType.startsWith('image/')) {
-      // Normalize HEIC/HEIF → JPEG (API doesn't accept HEIC directly)
-      const apiMime = (mimeType === 'image/heic' || mimeType === 'image/heif')
-        ? 'image/jpeg'
-        : mimeType;
-      messageContent = [
-        { type: 'image', source: { type: 'base64', media_type: apiMime, data: base64Data } },
-        { type: 'text',  text: `File: "${fileName}"\n\n${EXTRACT_PROMPT}` },
-      ];
-
-    } else if (mimeType === 'application/pdf') {
-      messageContent = [
-        { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: base64Data } },
-        { type: 'text',     text: `File: "${fileName}"\n\n${EXTRACT_PROMPT}` },
-      ];
-
-    } else {
-      // Plain text / RTF / CSV — decode to UTF-8 and send as text
-      const textContent = Buffer.from(base64Data, 'base64').toString('utf-8');
-      messageContent = [
-        { type: 'text', text: `File: "${fileName}"\n\nContent:\n${textContent}\n\n${EXTRACT_PROMPT}` },
-      ];
-    }
-
+    const messageContent = buildFileMessageContent(dataUrl, mimeType, fileName);
     const findings = await extractFindings('analyze-file', messageContent);
     res.json({ findings });
 
   } catch (err) {
     console.error('[analyze-file]', err.message);
-    res.status(500).json({ error: err.message });
+    res.status(err.status || 500).json({ error: err.message });
   }
 });
 
@@ -150,8 +36,6 @@ app.post('/api/analyze-text', async (req, res) => {
 
     const { text } = req.body;
     if (!text || !text.trim()) return res.status(400).json({ error: 'text required' });
-
-    console.log(`[analyze-text] length: ${text.length}`);
 
     const messageContent = [
       { type: 'text', text: `Pasted text:\n${text}\n\n${EXTRACT_PROMPT}` },
