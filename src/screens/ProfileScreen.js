@@ -34,6 +34,69 @@ function Tag({ children, color = '#7A2848' }) {
   );
 }
 
+// ── Photos grid — wrapping grid of tiles with click-to-upload placeholders ──
+
+function PhotoGrid({ photos = [], onChange, tileSize = 110 }) {
+  const fileRef = useRef(null);
+
+  function handleFiles(e) {
+    const files = Array.from(e.target.files || []);
+    e.target.value = ''; // allow re-selecting the same file later
+    if (!files.length) return;
+
+    Promise.all(files.map(file => new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onload = ev => resolve(ev.target.result);
+      reader.readAsDataURL(file);
+    }))).then(dataUrls => onChange([...(photos || []), ...dataUrls]));
+  }
+
+  function removePhoto(idx) {
+    onChange(photos.filter((_, i) => i !== idx));
+  }
+
+  // Always keep a handful of empty, clickable placeholders in the grid —
+  // at least 6 while empty, and always at least 1 spare slot to add more.
+  const emptySlots = Math.max(6 - photos.length, 1);
+
+  return (
+    <div>
+      <input ref={fileRef} type="file" accept="image/*" multiple onChange={handleFiles} style={{ display: 'none' }} />
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: `repeat(auto-fill, minmax(${tileSize}px, 1fr))`,
+        gap: 10,
+      }}>
+        {photos.map((src, i) => (
+          <div key={i} style={{
+            position: 'relative', aspectRatio: '1', borderRadius: 14,
+            overflow: 'hidden', border: '1px solid #E8E8E8', background: '#F5F5F5',
+          }}>
+            <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            <button type="button" onClick={() => removePhoto(i)} style={{
+              position: 'absolute', top: 6, right: 6,
+              width: 22, height: 22, borderRadius: '50%',
+              background: 'rgba(0,0,0,0.55)', color: '#FFFFFF',
+              border: 'none', cursor: 'pointer', fontSize: 13, lineHeight: 1,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>×</button>
+          </div>
+        ))}
+        {Array.from({ length: emptySlots }).map((_, i) => (
+          <button key={`empty-${i}`} type="button" onClick={() => fileRef.current?.click()} style={{
+            aspectRatio: '1', borderRadius: 14,
+            border: '1.5px dashed #DDDDDD', background: '#FAFAFA',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', color: '#CCCCCC', fontSize: 26, fontWeight: 300, padding: 0,
+          }}>
+            +
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function SectionLabel({ children }) {
   return (
     <div style={{
@@ -257,6 +320,9 @@ function MobileLayout({ profile, onLog, onImport, onUpdate }) {
 function MobileSections({ profile, onUpdate, editingNotes, setEditingNotes, notesValue, setNotesValue }) {
   return (
     <>
+      <SimpleSection title="Photos">
+        <PhotoGrid photos={profile.photos || []} onChange={photos => onUpdate(profile.id, { photos })} tileSize={90} />
+      </SimpleSection>
       {(profile.height || profile.lookingFor) && (
         <SimpleSection title="Details">
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
@@ -462,47 +528,51 @@ function DesktopLayout({ profile, onLog, onImport, onUpdate }) {
         ))}
       </div>
 
+      {/* ── PHOTOS — full-width wrapping grid ─────────────────── */}
+      <div style={{ padding: '20px 32px', borderBottom: '1px solid #EEEEEE', flexShrink: 0 }}>
+        <div style={{ background: '#FFFFFF', borderRadius: 16, border: '1px solid #E8E8E8', padding: '18px 20px' }}>
+          <SectionLabel>Photos</SectionLabel>
+          <div style={{ maxHeight: 260, overflowY: 'auto' }}>
+            <PhotoGrid photos={profile.photos || []} onChange={photos => onUpdate(profile.id, { photos })} />
+          </div>
+        </div>
+      </div>
+
       {/* ── TWO-COLUMN CONTENT ────────────────────────────────── */}
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
 
-        {/* LEFT — persona info */}
+        {/* LEFT — persona info, each as its own card */}
         <div style={{
           width: 320, flexShrink: 0,
           borderRight: '1px solid #EEEEEE',
-          overflowY: 'auto', background: '#FFFFFF',
+          overflowY: 'auto',
           padding: '24px 24px 32px',
-          display: 'flex', flexDirection: 'column', gap: 22,
+          display: 'flex', flexDirection: 'column', gap: 16,
         }}>
 
           {/* First impression as a pull-quote */}
           {profile.firstImpression && (
-            <div>
-              <SectionLabel>First Impression</SectionLabel>
-              <div style={{
-                borderLeft: '3px solid #7A2848',
-                paddingLeft: 14, marginLeft: 2,
-              }}>
+            <SimpleSection title="First Impression">
+              <div style={{ borderLeft: '3px solid #7A2848', paddingLeft: 14 }}>
                 <p style={{ margin: 0, fontSize: 14, color: '#333333', lineHeight: 1.65, fontStyle: 'italic' }}>
                   "{profile.firstImpression}"
                 </p>
               </div>
-            </div>
+            </SimpleSection>
           )}
 
           {/* Interests */}
           {profile.interests && profile.interests.length > 0 && (
-            <div>
-              <SectionLabel>Interests</SectionLabel>
+            <SimpleSection title="Interests">
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                 {profile.interests.map(tag => <Tag key={tag} color="#888888">{tag}</Tag>)}
               </div>
-            </div>
+            </SimpleSection>
           )}
 
           {/* Green / red flags */}
           {((profile.greenFlags?.length > 0) || (profile.redFlags?.length > 0)) && (
-            <div>
-              <SectionLabel>Flags</SectionLabel>
+            <SimpleSection title="Flags">
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {(profile.greenFlags || []).map(f => (
                   <div key={f} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
@@ -517,24 +587,22 @@ function DesktopLayout({ profile, onLog, onImport, onUpdate }) {
                   </div>
                 ))}
               </div>
-            </div>
+            </SimpleSection>
           )}
 
           {/* Details */}
           {(profile.height || profile.lookingFor) && (
-            <div>
-              <SectionLabel>Details</SectionLabel>
+            <SimpleSection title="Details">
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                 {profile.height && <Tag>{profile.height}</Tag>}
                 {profile.lookingFor && <Tag color="#7A3AC8">{profile.lookingFor}</Tag>}
               </div>
-            </div>
+            </SimpleSection>
           )}
 
           {/* Extracted facts */}
           {profile.conversationHighlights && profile.conversationHighlights.length > 0 && (
-            <div>
-              <SectionLabel>Extracted Facts · {profile.conversationHighlights.length}</SectionLabel>
+            <SimpleSection title={`Extracted Facts · ${profile.conversationHighlights.length}`}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {profile.conversationHighlights.map(h => (
                   <div key={h.id} style={{ display: 'flex', gap: 10 }}>
@@ -551,12 +619,11 @@ function DesktopLayout({ profile, onLog, onImport, onUpdate }) {
                   </div>
                 ))}
               </div>
-            </div>
+            </SimpleSection>
           )}
 
           {/* Private notes */}
-          <div>
-            <SectionLabel>Private Notes</SectionLabel>
+          <SimpleSection title="Private Notes">
             {editingNotes ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <textarea
@@ -576,7 +643,7 @@ function DesktopLayout({ profile, onLog, onImport, onUpdate }) {
                 </p>
               </div>
             )}
-          </div>
+          </SimpleSection>
         </div>
 
         {/* RIGHT — interaction history */}
